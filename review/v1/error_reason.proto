@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package api.review.v1;
+
+import "errors/errors.proto";
+
+option go_package = "review-service/api/review/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.review.v1";
+option objc_class_prefix = "APIReviewV1";
+
+enum ErrorReason {
+  option (errors.default_code) = 500;
+
+  UNSPECIFIED = 0;
+
+  // 订单
+  ORDER_REVIEWED = 10001 [(errors.code) = 409];
+  ORDER_REPLIED = 101 [(errors.code) = 409];
+  STORE_PERMISSION_DENIED = 102 [(errors.code) = 403];
+  APPEAL_ALREADY_APPROVED = 103 [(errors.code) = 409];
+
+}

@@ -1,0 +1,174 @@
+syntax = "proto3";
+
+package api.review.v1;
+
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+option go_package = "review-service/api/review/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.review.v1";
+
+service Review {
+	// 创建评价
+	rpc CreateReview (CreateReviewRequest) returns (CreateReviewResponse) {
+		option (google.api.http) = {
+			post: "/v1/review",
+			body: "*"
+		};
+	};
+	// 获取评价
+	rpc GetReview (GetReviewRequest) returns (GetReviewResponse) {
+		option (google.api.http) = {
+			get: "/v1/review/{review_id}"
+		};
+	};
+	// 审核评价
+	rpc AuditReview (AuditReviewRequest) returns (AuditReviewResponse) {
+		option (google.api.http) = {
+		  post: "/v1/review/audit",
+		  body: "*"
+		};
+	};
+	// 回复评价
+	rpc ReplyReview (ReplyReviewRequest) returns (ReplyReviewResponse) {
+		option (google.api.http) = {
+		  post: "/v1/review/reply",
+		  body: "*"
+		};
+	};
+	// 申诉评价
+	rpc AppealReview (AppealReviewRequest) returns (AppealReviewResponse) {
+		option (google.api.http) = {
+			post: "/v1/review/appeal",
+			body: "*"
+		};
+	};
+	// 审核申诉
+	rpc AuditAppeal (AuditAppealRequest) returns (AuditAppealResponse) {
+		option (google.api.http) = {
+			post: "/v1/appeal/audit",
+			body: "*"
+		};
+	};
+	// 根据用户ID列出评价
+			rpc ListReviewsByUserId (ListReviewsByUserIdRequest) returns (ListReviewsByUserIdResponse) {
+		option (google.api.http) = {
+			get: "/v1/{user_id}/reviews",
+		};
+	};
+	// 根据商家ID列出评价
+	rpc ListReviewsByStoreId (ListReviewsByStoreIdRequest) returns (ListReviewsByStoreIdResponse) {
+		option (google.api.http) = {
+			get: "/v1/{store_id}/reviews",
+		};
+	};
+}
+
+// 评价信息
+message ReviewInfo{
+	int64 review_id = 1;
+	int64 user_id = 2;
+	int64 order_id = 3;
+	int32 score = 4;
+	int32 service_score = 5;
+	int32 express_score = 6;
+	string content = 7;
+	string pic_info = 8;
+	string video_info = 9;
+	int32 status = 10;
+}
+
+// 创建评价
+message CreateReviewRequest {
+	int64 user_id = 1 [(validate.rules).int64 = {gt: 0}]; 
+	int64 order_id = 2 [(validate.rules).int64 = {gt: 0}];
+	int32 score = 3 [(validate.rules).int32 = {in: [1, 2, 3, 4, 5]}];
+	int32 service_score = 4 [(validate.rules).int32 = {in: [1, 2, 3, 4, 5]}];
+	int32 express_score = 5 [(validate.rules).int32 = {in: [1, 2, 3, 4, 5]}];
+	string content = 6 [(validate.rules).string = {min_len: 8, max_len: 255}];
+	string pic_info = 7;
+	string video_info = 8;
+	bool anonymous = 9;
+}
+message CreateReviewResponse {
+	int64 review_id = 1;
+}
+
+// 获取评价
+message GetReviewRequest {
+	int64 review_id = 1 [(validate.rules).int64 = {gt: 0}];
+}
+message GetReviewResponse {
+	ReviewInfo data = 1;
+}
+
+// 审核评价
+message AuditReviewRequest {
+	int64 review_id = 1 [(validate.rules).int64 = {gt: 0}];
+	int32 status = 2 [(validate.rules).int32 = {gt: 0}];
+	string op_user = 3 [(validate.rules).string = {min_len: 2}];
+	string op_reason = 4 [(validate.rules).string = {min_len: 2}];
+	optional string op_remarks = 5;
+}
+message AuditReviewResponse {
+	int64 review_id = 1;
+	int32 status = 2;
+}
+
+// 回复评论
+message ReplyReviewRequest {
+	int64 review_id = 1 [(validate.rules).int64 = {gt: 0}];
+	int64 store_id = 2 [(validate.rules).int64 = {gt: 0}];
+	string content = 3 [(validate.rules).string = {min_len: 8, max_len: 255}];
+	string pic_info = 4;
+	string video_info = 5;
+}
+message ReplyReviewResponse {
+	int64 reply_id = 1;
+}
+
+// 申诉评论
+message AppealReviewRequest {
+	int64 review_id = 1 [(validate.rules).int64 = {gt: 0}];
+	int64 store_id = 2 [(validate.rules).int64 = {gt: 0}];
+	string reason = 3 [(validate.rules).string = {min_len: 2, max_len:200}];
+	string content = 4 [(validate.rules).string = {min_len: 2, max_len:200}];
+	string pic_info = 5;
+	string video_info = 6;
+}
+message AppealReviewResponse {
+	int64 appeal_id = 1;
+}
+
+// 审核申诉
+message AuditAppealRequest {
+	int64 appeal_id = 1 [(validate.rules).int64 = {gt: 0}];
+	int64 review_id = 2 [(validate.rules).int64 = {gt: 0}];
+	int32 status = 3 [(validate.rules).int32 = {gt: 0}];
+	string op_user = 4 [(validate.rules).string = {min_len: 2}];
+	string op_reason = 5 [(validate.rules).string = {min_len: 2}];
+	optional string op_remarks = 6 [(validate.rules).string = {min_len: 2}];
+}
+message AuditAppealResponse {
+}
+
+// 获取用户评价列表
+message ListReviewsByUserIdRequest {
+  int64 user_id = 1 [(validate.rules).int64 = {gt: 0}];
+  int32 page = 2 [(validate.rules).int32 = {gt: 0}];
+  int32 size = 3 [(validate.rules).int32 = {gt: 0}];
+}
+message ListReviewsByUserIdResponse {
+	repeated ReviewInfo list = 1;
+}
+
+// 获取商家评价列表
+message ListReviewsByStoreIdRequest {
+  int64 store_id = 1 [(validate.rules).int64 = {gt: 0}];
+  int32 page = 2 [(validate.rules).int32 = {gt: 0}];
+  int32 size = 3 [(validate.rules).int32 = {gt: 0}];
+}
+message ListReviewsByStoreIdResponse {
+	repeated ReviewInfo list = 1;
+}
