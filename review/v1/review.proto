@@ -52,7 +52,7 @@ service Review {
 		};
 	};
 	// 根据用户ID列出评价
-			rpc ListReviewsByUserId (ListReviewsByUserIdRequest) returns (ListReviewsByUserIdResponse) {
+	rpc ListReviewsByUserId (ListReviewsByUserIdRequest) returns (ListReviewsByUserIdResponse) {
 		option (google.api.http) = {
 			get: "/v1/{user_id}/reviews",
 		};
